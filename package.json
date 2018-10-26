@@ -4,9 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "electron main.js"
+    "start": "electron electron/main.js",
+    "server": "node server/server.js"
   },
   "dependencies": {
-    "electron": "3.0.3"
+    "body-parser": "^1.18.3",
+    "electron": "3.0.3",
+    "express": "4.16.4",
+    "morgan": "1.9.1",
+    "request": "2.88.0"
   }
 }
