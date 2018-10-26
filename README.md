@@ -1,8 +1,9 @@
-# Electron.protocol.registerStreamProtocol Issues and Solutions
+# Electron.protocol.registerStreamProtocol Issues
 
 ```sh
 npm install
-npm start
+npm run server
+npm start # In a separate terminal
 ```
 
 ## Caveats / Issues
@@ -17,4 +18,9 @@ npm start
 
 - `XMLHttpRequest` body data never makes it to the protocol handler.
 
-	**Haven't figured this out yet**
+	**This appears to be broken**
+
+- Cookies dont appear to work.
+
+	**This appears to be broken**
+
