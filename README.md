@@ -1,5 +1,12 @@
 # Electron.protocol.registerStreamProtocol Issues and Solutions
 
+```sh
+npm install
+npm start
+```
+
+## Caveats / Issues
+
 - I'm using `protocol.registerStreamProtocol` but XHR, `<script>`, and `<img>` don't work.
 
 	Need to use `protocol.registerStandardSchemes` before `protocol.registerStreamProtocol`
