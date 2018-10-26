@@ -1,5 +1,13 @@
-# Simple repository demonstrating using protocol handlers in Electron.
+# Electron.protocol.registerStreamProtocol Issues and Solutions
 
-Most of these DO NOT work now as I'm trying to track down why they are failing.
+- I'm using `protocol.registerStreamProtocol` but XHR, `<script>`, and `<img>` don't work.
 
-I'll update them once they work properly.
+	Need to use `protocol.registerStandardSchemes` before `protocol.registerStreamProtocol`
+
+- `XMLHttpRequest` works but `window.fetch` doesn't. It says `URL scheme "myapp" is not supported"`.
+
+	Need to use `webFrame.registerURLSchemeAsPrivileged` inside the renderer process.
+
+- `XMLHttpRequest` body data never makes it to the protocol handler.
+
+	**Haven't figured this out yet**
