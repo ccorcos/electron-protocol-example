@@ -22,5 +22,5 @@ npm start # In a separate terminal
 
 - Cookies dont appear to work.
 
-	**This appears to be broken**
+	Use the cookie jar
 

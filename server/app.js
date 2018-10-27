@@ -23,10 +23,21 @@ fetch("/fetchping", {
 	.then(r => console.log("fetch response", r))
 
 // Test cookies
-fetch("/setCookies").then(() => {
-	console.log("cookies", document.cookie)
-	fetch("/logCookies", {
-		method: "post",
-		credentials: "include",
+fetch("/logCookies", {
+	method: "post",
+}).then(() => {
+	fetch("/setCookies").then(() => {
+		console.log("cookies", document.cookie)
+		fetch("/logCookies", {
+			method: "post",
+		}).then(() => {
+			fetch("/clearCookies", {
+				method: "post",
+			}).then(() => {
+				fetch("/logCookies", {
+					method: "post",
+				})
+			})
+		})
 	})
 })

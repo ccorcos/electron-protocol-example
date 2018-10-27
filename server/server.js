@@ -42,6 +42,13 @@ app.post("/logCookies", (req, res) => {
 	res.send()
 })
 
+app.post("/clearCookies", (req, res) => {
+	console.log(req.cookies)
+	res.clearCookie("clientCookie")
+	res.clearCookie("serverCookie")
+	res.send()
+})
+
 app.listen(8080, () => {
 	console.log("Serving from localhost:8080")
 })

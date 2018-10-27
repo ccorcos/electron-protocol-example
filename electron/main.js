@@ -1,5 +1,6 @@
 const { app, protocol, BrowserWindow } = require("electron")
 const request = require("request")
+const cookieJar = require("./cookieJar")
 
 const customProtocol = "myapp"
 
@@ -16,6 +17,7 @@ app.on("ready", async function() {
 				url: httpUrl,
 				headers: req.headers,
 				method: req.method,
+				jar: cookieJar,
 				body:
 					req.uploadData &&
 					req.uploadData[0] &&
@@ -23,6 +25,8 @@ app.on("ready", async function() {
 			})
 
 			stream.on("response", resp => {
+				console.log(httpUrl, resp.statusCode, resp.headers)
+				console.log("\n")
 				callback({
 					statusCode: resp.statusCode,
 					headers: resp.headers,
