@@ -22,5 +22,5 @@ npm start # In a separate terminal
 
 - Cookies dont appear to work.
 
-	Use the cookie jar
+	Use the `request.jar()` in the main process. There's still some isolation here from the renderer process.
 

@@ -1,3 +1,5 @@
+// TODO: use electron-cookie to handle local cookies for amplitude, etc.
+
 // Need to register as privileged for window.fetch to work.
 const { webFrame } = require("electron")
 webFrame.registerURLSchemeAsPrivileged("myapp")
