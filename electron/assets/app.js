@@ -6,7 +6,7 @@ webFrame.registerURLSchemeAsPrivileged("myapp")
 
 // Test XHR ping
 const xhr = new XMLHttpRequest()
-xhr.open("POST", "/xhrping", true)
+xhr.open("POST", "/api/xhrping", true)
 xhr.setRequestHeader("Content-Type", "application/json")
 xhr.send(JSON.stringify({ message: "xhrping" }))
 xhr.onreadystatechange = function() {
@@ -16,7 +16,7 @@ xhr.onreadystatechange = function() {
 }
 
 // Test fetch ping
-fetch("/fetchping", {
+fetch("/api/fetchping", {
 	method: "POST",
 	headers: { "Content-Type": "application/json" },
 	body: JSON.stringify({ message: "fetchping" }),
@@ -25,18 +25,18 @@ fetch("/fetchping", {
 	.then(r => console.log("fetch response", r))
 
 // Test cookies
-fetch("/logCookies", {
+fetch("/api/logCookies", {
 	method: "post",
 }).then(() => {
-	fetch("/setCookies").then(() => {
+	fetch("/api/setCookies").then(() => {
 		console.log("cookies", document.cookie)
-		fetch("/logCookies", {
+		fetch("/api/logCookies", {
 			method: "post",
 		}).then(() => {
-			fetch("/clearCookies", {
+			fetch("/api/clearCookies", {
 				method: "post",
 			}).then(() => {
-				fetch("/logCookies", {
+				fetch("/api/logCookies", {
 					method: "post",
 				})
 			})

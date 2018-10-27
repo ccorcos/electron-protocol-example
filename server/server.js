@@ -6,24 +6,18 @@ const cookieParser = require("cookie-parser")
 const app = express()
 app.use(morgan("dev"))
 
-// Test serving files.
-app.get("/", (req, res) => {
-	res.sendFile(__dirname + "/index.html")
-})
-
-app.get("/app.js", (req, res) => {
-	res.sendFile(__dirname + "/app.js")
-})
+// Serve static files.
+app.use(express.static(__dirname + "/assets"))
 
 // Test post requests.
 app.use(bodyParser.json())
 
-app.post("/xhrping", (req, res) => {
+app.post("/api/xhrping", (req, res) => {
 	console.log("/xhrping data", req.body)
 	res.json({ message: "pong" })
 })
 
-app.post("/fetchping", (req, res) => {
+app.post("/api/fetchping", (req, res) => {
 	console.log("/fetchping data", req.body)
 	res.json({ message: "pong" })
 })
@@ -31,22 +25,27 @@ app.post("/fetchping", (req, res) => {
 // Test cookies.
 app.use(cookieParser())
 
-app.get("/setCookies", (req, res) => {
+app.get("/api/setCookies", (req, res) => {
 	res.cookie("clientCookie", "xxx")
 	res.cookie("serverCookie", "yyy", { httpOnly: true })
 	res.send()
 })
 
-app.post("/logCookies", (req, res) => {
+app.post("/api/logCookies", (req, res) => {
 	console.log(req.cookies)
 	res.send()
 })
 
-app.post("/clearCookies", (req, res) => {
+app.post("/api/clearCookies", (req, res) => {
 	console.log(req.cookies)
 	res.clearCookie("clientCookie")
 	res.clearCookie("serverCookie")
 	res.send()
+})
+
+// Serve html to everyone else.
+app.get("*", (req, res) => {
+	res.sendFile(__dirname + "/assets/index.html")
 })
 
 app.listen(8080, () => {
