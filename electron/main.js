@@ -1,6 +1,6 @@
 const { app, protocol, BrowserWindow } = require("electron")
 const request = require("request")
-const fs = require("fs")
+const fs = require("fs-extra")
 const path = require("path")
 const url = require("url")
 const mime = require("mime-types")
@@ -14,7 +14,19 @@ const customProtocol = "myapp"
 
 protocol.registerStandardSchemes([customProtocol])
 
-const { files } = require("./assets/assets.json")
+let { version, files } = require("./assets/assets.json")
+
+let mainWindow
+
+function createWindow() {
+	mainWindow = new BrowserWindow({
+		webPreferences: {
+			nodeIntegration: true,
+		},
+	})
+	const url = customProtocol + "://localhost:8080"
+	mainWindow.loadURL(url)
+}
 
 app.on("ready", async function() {
 	protocol.registerStreamProtocol(
@@ -85,13 +97,53 @@ app.on("ready", async function() {
 				return
 			}
 
-			const mainWindow = new BrowserWindow({
-				webPreferences: {
-					nodeIntegration: true,
-				},
-			})
-			const url = customProtocol + "://localhost:8080"
-			mainWindow.loadURL(url)
+			createWindow()
 		}
 	)
 })
+
+setInterval(() => {
+	request.get(
+		{
+			url: "http://localhost:8080/assets.json",
+			json: true,
+		},
+		(err, res, data) => {
+			if (err) {
+				console.log("UPDATE ERROR:", err)
+			} else if (res.statusCode !== 200) {
+				console.log("UPDATE ERROR:", res.statusCode)
+			} else {
+				if (data.version === version) {
+					console.log("NO UPDATE:", version)
+				} else {
+					console.log("UPDATING:", data.version)
+					fs.mkdirp(__dirname + "/staging")
+						.then(() => {
+							return Promise.all(
+								[...data.files, "assets.json"].map(file => {
+									return new Promise((resolve, reject) => {
+										const req = request("http://localhost:8080/" + file)
+										const write = fs.createWriteStream(
+											__dirname + "/staging/" + file
+										)
+										req.pipe(write)
+										req.on("end", resolve)
+									})
+								})
+							)
+						})
+						.then(() => {
+							mainWindow.close()
+							return fs.move(__dirname + "/staging", __dirname + "assets", {
+								overwrite: true,
+							})
+						})
+						.then(() => {
+							createWindow()
+						})
+				}
+			}
+		}
+	)
+}, 2000)
