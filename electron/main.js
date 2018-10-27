@@ -1,6 +1,8 @@
 const { app, protocol, BrowserWindow } = require("electron")
 const request = require("request")
-const cookieJar = require("./cookieJar")
+
+// TODO: persist jar with touch-cookie-store, perhaps using electron-store
+const cookieJar = request.jar()
 
 const customProtocol = "myapp"
 
