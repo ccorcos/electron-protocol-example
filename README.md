@@ -23,3 +23,6 @@ npm start # In a separate terminal
 - Cookies dont appear to work.
 
 	**This appears to be broken with a work-around.** Use the `request.jar()` in the main process. There's still some isolation here from the renderer process, but its probably adequate.
+
+## Asset Caching
+
