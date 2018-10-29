@@ -15,7 +15,16 @@ const cookieJar = request.jar()
 
 protocol.registerStandardSchemes([customProtocol])
 
-let { version, files } = require("./assets/assets.json")
+let version = "0.0.0"
+let files = []
+
+function loadAssetsJSON() {
+	return fs.readFile(__dirname + "/assets/assets.json").then(contents => {
+		const assets = JSON.parse(contents)
+		version = assets.version
+		files = assets.files
+	})
+}
 
 let mainWindow
 
@@ -29,78 +38,85 @@ function createWindow() {
 	mainWindow.loadURL(url)
 }
 
-app.on("ready", async function() {
-	protocol.registerStreamProtocol(
-		customProtocol,
-		(req, callback) => {
-			const httpUrl = req.url.replace(customProtocol, "http")
+app.on("ready", function() {
+	loadAssetsJSON().then(() => {
+		protocol.registerStreamProtocol(
+			customProtocol,
+			(req, callback) => {
+				const httpUrl = req.url.replace(customProtocol, "http")
 
-			const parsed = url.parse(httpUrl)
+				const parsed = url.parse(httpUrl)
 
-			const cached = files.indexOf(parsed.pathname) !== -1
-			const api = parsed.pathname.startsWith("/api")
-			const ext = path.parse(parsed.pathname).ext
+				const cached = files.indexOf(parsed.pathname) !== -1
+				const api = parsed.pathname.startsWith("/api")
+				const ext = path.parse(parsed.pathname).ext
 
-			if (cached && !proxyAllRequests) {
-				console.log("CACHE:", httpUrl)
-				// Serve static assets from cache
-				const fileStream = fs.createReadStream(
-					path.resolve(path.join(__dirname, "assets", parsed.pathname))
-				)
-				callback({
-					statusCode: 200,
-					headers: {
-						"Content-Type": mime.lookup(parsed.pathname),
-					},
-					data: fileStream,
-				})
-			} else if (api || ext || proxyAllRequests) {
-				console.log("PROXY:", httpUrl)
-				// Proxy api requests.
-				const stream = request({
-					url: httpUrl,
-					headers: req.headers,
-					method: req.method,
-					jar: cookieJar,
-					body:
-						req.uploadData &&
-						req.uploadData[0] &&
-						req.uploadData[0].bytes.toString("utf8"),
-				})
-
-				stream.on("response", resp => {
-					console.log("PROXY RESPONSE:", httpUrl, resp.statusCode, resp.headers)
-					console.log("\n")
+				if (cached && !proxyAllRequests) {
+					console.log("CACHE:", httpUrl)
+					// Serve static assets from cache
+					const fileStream = fs.createReadStream(
+						path.resolve(path.join(__dirname, "assets", parsed.pathname))
+					)
 					callback({
-						statusCode: resp.statusCode,
-						headers: resp.headers,
-						data: resp,
+						statusCode: 200,
+						headers: {
+							"Content-Type": mime.lookup(parsed.pathname),
+						},
+						data: fileStream,
 					})
-				})
-			} else {
-				console.log("HTML:", httpUrl)
-				// Serve the html file
-				const fileStream = fs.createReadStream(
-					path.resolve(path.join(__dirname, "assets/index.html"))
-				)
-				callback({
-					statusCode: 200,
-					headers: {
-						"content-type": "text/html",
-					},
-					data: fileStream,
-				})
-			}
-		},
-		error => {
-			if (error) {
-				console.error(error)
-				return
-			}
+				} else if (api || ext || proxyAllRequests) {
+					console.log("PROXY:", httpUrl)
+					// Proxy api requests.
+					const stream = request({
+						url: httpUrl,
+						headers: req.headers,
+						method: req.method,
+						jar: cookieJar,
+						body:
+							req.uploadData &&
+							req.uploadData[0] &&
+							req.uploadData[0].bytes.toString("utf8"),
+					})
 
-			createWindow()
-		}
-	)
+					stream.on("response", resp => {
+						console.log(
+							"PROXY RESPONSE:",
+							httpUrl,
+							resp.statusCode,
+							resp.headers
+						)
+						console.log("\n")
+						callback({
+							statusCode: resp.statusCode,
+							headers: resp.headers,
+							data: resp,
+						})
+					})
+				} else {
+					console.log("HTML:", httpUrl)
+					// Serve the html file
+					const fileStream = fs.createReadStream(
+						path.resolve(path.join(__dirname, "assets/index.html"))
+					)
+					callback({
+						statusCode: 200,
+						headers: {
+							"content-type": "text/html",
+						},
+						data: fileStream,
+					})
+				}
+			},
+			error => {
+				if (error) {
+					console.error(error)
+					return
+				}
+
+				createWindow()
+			}
+		)
+	})
 })
 
 setInterval(() => {
@@ -143,13 +159,16 @@ setInterval(() => {
 							)
 						})
 						.then(() => {
-							mainWindow.close()
+							console.log("RELOADING")
 							return fs.move(__dirname + "/staging", __dirname + "/assets", {
 								overwrite: true,
 							})
 						})
 						.then(() => {
-							createWindow()
+							return loadAssetsJSON()
+						})
+						.then(() => {
+							mainWindow.reload()
 						})
 				}
 			}
