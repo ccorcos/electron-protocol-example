@@ -2,7 +2,8 @@
 
 // Need to register as privileged for window.fetch to work.
 const { webFrame } = require("electron")
-webFrame.registerURLSchemeAsPrivileged("myapp")
+const { customProtocol } = require("../../config")
+webFrame.registerURLSchemeAsPrivileged(customProtocol)
 
 // Test XHR ping
 const xhr = new XMLHttpRequest()

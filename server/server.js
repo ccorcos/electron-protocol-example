@@ -2,6 +2,7 @@ const express = require("express")
 const morgan = require("morgan")
 const bodyParser = require("body-parser")
 const cookieParser = require("cookie-parser")
+const { serverPort } = require("../config")
 
 const app = express()
 app.use(morgan("dev"))
@@ -48,6 +49,6 @@ app.get("*", (req, res) => {
 	res.sendFile(__dirname + "/assets/index.html")
 })
 
-app.listen(8080, () => {
-	console.log("Serving from localhost:8080")
+app.listen(serverPort, () => {
+	console.log("Serving from localhost:" + serverPort)
 })

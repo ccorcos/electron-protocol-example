@@ -18,9 +18,8 @@ npm start # In a separate terminal
 
 - `XMLHttpRequest` body data never makes it to the protocol handler.
 
-	**This appears to be broken**
+	**This appears to be broken with no work-around**
 
 - Cookies dont appear to work.
 
-	Use the `request.jar()` in the main process. There's still some isolation here from the renderer process.
-
+	**This appears to be broken with a work-around.** Use the `request.jar()` in the main process. There's still some isolation here from the renderer process, but its probably adequate.

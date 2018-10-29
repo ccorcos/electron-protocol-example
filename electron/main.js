@@ -4,13 +4,12 @@ const fs = require("fs-extra")
 const path = require("path")
 const url = require("url")
 const mime = require("mime-types")
+const { customProtocol, serverHost } = require("../config")
 
 const proxyAllRequests = false
 
 // TODO: persist jar with touch-cookie-store, perhaps using electron-store
 const cookieJar = request.jar()
-
-const customProtocol = "myapp"
 
 protocol.registerStandardSchemes([customProtocol])
 
@@ -24,7 +23,7 @@ function createWindow() {
 			nodeIntegration: true,
 		},
 	})
-	const url = customProtocol + "://localhost:8080"
+	const url = customProtocol + "://" + serverHost
 	mainWindow.loadURL(url)
 }
 
@@ -36,7 +35,7 @@ app.on("ready", async function() {
 
 			const parsed = url.parse(httpUrl)
 
-			const cached = files.indexOf(parsed.pathname.slice(1)) !== -1
+			const cached = files.indexOf(parsed.pathname) !== -1
 			const api = parsed.pathname.startsWith("/api")
 			const ext = path.parse(parsed.pathname).ext
 
@@ -49,7 +48,7 @@ app.on("ready", async function() {
 				callback({
 					statusCode: 200,
 					headers: {
-						"Content-Type": mime.lookup(parsed.pathname.slice(1)),
+						"Content-Type": mime.lookup(parsed.pathname),
 					},
 					data: fileStream,
 				})
@@ -105,7 +104,7 @@ app.on("ready", async function() {
 setInterval(() => {
 	request.get(
 		{
-			url: "http://localhost:8080/assets.json",
+			url: "http://" + serverHost + "/assets.json",
 			json: true,
 		},
 		(err, res, data) => {
@@ -123,7 +122,7 @@ setInterval(() => {
 							return Promise.all(
 								[...data.files, "assets.json"].map(file => {
 									return new Promise((resolve, reject) => {
-										const req = request("http://localhost:8080/" + file)
+										const req = request("http://" + serverHost + "/" + file)
 										const write = fs.createWriteStream(
 											__dirname + "/staging/" + file
 										)
