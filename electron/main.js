@@ -5,12 +5,15 @@ const path = require("path")
 const url = require("url")
 const mime = require("mime-types")
 
+// Configs
+const customProtocol = "myapp"
+const serverHost = "localhost:8080"
 const proxyAllRequests = false
 
 // TODO: persist jar with touch-cookie-store, perhaps using electron-store
 const cookieJar = request.jar()
 
-protocol.registerStandardSchemes(["myapp"])
+protocol.registerStandardSchemes([customProtocol])
 
 let { version, files } = require("./assets/assets.json")
 
@@ -22,15 +25,15 @@ function createWindow() {
 			nodeIntegration: true,
 		},
 	})
-	const url = "myapp" + "://" + "localhost:8080"
+	const url = customProtocol + "://" + serverHost
 	mainWindow.loadURL(url)
 }
 
 app.on("ready", async function() {
 	protocol.registerStreamProtocol(
-		"myapp",
+		customProtocol,
 		(req, callback) => {
-			const httpUrl = req.url.replace("myapp", "http")
+			const httpUrl = req.url.replace(customProtocol, "http")
 
 			const parsed = url.parse(httpUrl)
 
@@ -103,7 +106,7 @@ app.on("ready", async function() {
 setInterval(() => {
 	request.get(
 		{
-			url: "http://" + "localhost:8080" + "/assets.json",
+			url: "http://" + serverHost + "/assets.json",
 			json: true,
 		},
 		(err, res, data) => {
@@ -119,23 +122,29 @@ setInterval(() => {
 					fs.mkdirp(__dirname + "/staging")
 						.then(() => {
 							return Promise.all(
-								[...data.files, "assets.json"].map(file => {
+								[...data.files, "/assets.json"].map(file => {
 									return new Promise((resolve, reject) => {
-										const req = request(
-											"http://" + "localhost:8080" + "/" + file
-										)
-										const write = fs.createWriteStream(
-											__dirname + "/staging/" + file
-										)
-										req.pipe(write)
-										req.on("end", resolve)
+										console.log("DOWNLOADING:", file)
+										const dest = __dirname + "/staging" + file
+										fs.mkdirp(path.parse(dest).dir)
+											.then(() => {
+												const req = request("http://" + serverHost + file)
+												const write = fs.createWriteStream(
+													__dirname + "/staging" + file
+												)
+												req.pipe(write)
+												req.on("error", reject)
+												req.on("end", resolve)
+												write.on("error", reject)
+											})
+											.catch(reject)
 									})
 								})
 							)
 						})
 						.then(() => {
 							mainWindow.close()
-							return fs.move(__dirname + "/staging", __dirname + "assets", {
+							return fs.move(__dirname + "/staging", __dirname + "/assets", {
 								overwrite: true,
 							})
 						})
