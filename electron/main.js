@@ -23,15 +23,20 @@ app.on("ready", async function() {
 
 			console.log(req)
 			console.log("\n")
+
+			let body = undefined
+			if (req.uploadData) {
+				body = req.uploadData
+					.map(({ bytes }) => bytes.toString("utf8"))
+					.join(",")
+			}
+
 			const stream = request({
 				url: httpUrl,
 				headers: req.headers,
 				method: req.method,
 				jar: cookieJar,
-				body:
-					req.uploadData &&
-					req.uploadData[0] &&
-					req.uploadData[0].bytes.toString("utf8"),
+				body: body,
 			})
 
 			stream.on("response", resp => {
