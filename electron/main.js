@@ -24,6 +24,7 @@ app.on("ready", async function() {
 			console.log(req)
 			console.log("\n")
 
+			// TODO: might be better to push buffers into the request stream?
 			let body = undefined
 			if (req.uploadData) {
 				body = req.uploadData
