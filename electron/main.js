@@ -1,5 +1,6 @@
 const { app, protocol, BrowserWindow } = require("electron")
 const request = require("request")
+const url = require("url")
 
 // TODO: persist jar with touch-cookie-store, perhaps using electron-store
 const cookieJar = request.jar()
@@ -12,7 +13,14 @@ app.on("ready", async function() {
 	protocol.registerStreamProtocol(
 		customProtocol,
 		(req, callback) => {
-			const httpUrl = req.url.replace(customProtocol, "http")
+			// req.url: myapp://localhost/abc
+			// httpUrl: http://localhost:8080/abc
+			const parsed = url.parse(req.url)
+			parsed.protocol = "http:"
+			delete parsed.host
+			parsed.port = 8080
+			const httpUrl = url.format(parsed)
+
 			console.log(req)
 			console.log("\n")
 			const stream = request({
@@ -47,7 +55,9 @@ app.on("ready", async function() {
 					nodeIntegration: true,
 				},
 			})
-			const url = customProtocol + "://localhost:8080"
+
+			// Leave off the port so CORS works.
+			const url = customProtocol + "://localhost"
 			mainWindow.loadURL(url)
 		}
 	)

@@ -2,6 +2,7 @@ const express = require("express")
 const morgan = require("morgan")
 const bodyParser = require("body-parser")
 const cookieParser = require("cookie-parser")
+const cors = require("access-control")
 
 const app = express()
 app.use(morgan("dev"))
@@ -51,4 +52,28 @@ app.post("/clearCookies", (req, res) => {
 
 app.listen(8080, () => {
 	console.log("Serving from localhost:8080")
+})
+
+// Test CORS requests. You can't have a origin * if you're sending credentials so it is common
+// to set the origin from the client which is happening here:
+// https://github.com/primus/access-control/blob/a466b729d65c32580e7e019c7f0278e50915b6d1/index.js#L125
+
+const corsApp = express()
+corsApp.use(morgan("dev"))
+corsApp.use(
+	cors({
+		credentials: true,
+		origins: "*",
+	})
+)
+
+corsApp.use(bodyParser.json())
+
+corsApp.post("/corsping", (req, res) => {
+	console.log("/corsping data", req.body)
+	res.json({ message: "pong" })
+})
+
+corsApp.listen(8081, () => {
+	console.log("Serving cors app from localhost:8081")
 })

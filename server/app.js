@@ -43,3 +43,12 @@ fetch("/logCookies", {
 		})
 	})
 })
+
+// Test fetch cors
+fetch("http://localhost:8081/corsping", {
+	method: "POST",
+	headers: { "Content-Type": "application/json" },
+	body: JSON.stringify({ message: "fetchping" }),
+})
+	.then(r => r.json())
+	.then(r => console.log("cors response", r))
